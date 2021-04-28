@@ -6,3 +6,4 @@ LastEditors  : Wang.HH
 Description  : your description
 FilePath     : /AI_Demo/my_first_demo/first.py
 '''
+print('hhhh')
