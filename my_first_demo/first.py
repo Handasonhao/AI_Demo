@@ -1,12 +1,13 @@
 '''
 Author       : Wang.HH
 Date         : 2021-04-28 10:39:59
-LastEditTime : 2021-05-31 16:41:52
+LastEditTime : 2021-06-01 14:44:51
 LastEditors  : Wang.HH
 Description  : your description
 FilePath     : /AI_Demo/my_first_demo/first.py
 '''
 print('<--加载工具库开始-->')
+from matplotlib import image
 import numpy as np
 import wsgiref.simple_server as ws
 print(ws.make_server)
@@ -193,7 +194,102 @@ def optimize(w, b, X, Y, num_iterations, learning_rate, print_cost = False):
   return params, costs
 
 def predict(w, b, X):
-  return
+  """
+  predict 预测结果函数
+
+  Args:
+      w (nparray): 权重数组，维度是(12288, 1)
+      b (nparray): 偏置bias
+      X (nparray): 图片特征数据，维度(12288, 图片张数)
+
+  Returns:
+      Y_prediction(nparray): 对每张图片的预测结果
+  """  
+  m = X.shape[1]
+  print("训练图片张数：{}".format(m))
+  Y_prediction = np.zeros((1,m))
+  A = sigmoid(np.dot(w.T, X) + b) # 此行代码进行预测
+  # 得出的结果是小数形式，将其转换成0和1的形式，方便后面的显示，(>=0.5就是有猫，<0.5就是无猫)
+  for i in range(A.shape[1]):
+    if A[0,i] >= 0.5: # 因为是二维数组，所以这里数组第一个参数是0
+      Y_prediction[0,i] = 1
+  
+  return Y_prediction
+
+def model(X_train, Y_train, X_test, Y_test, num_iterations = 2000, learning_rate = 0.5, print_cost = False):
+  # 初始化待训练的参数
+  w, b = initialize_with_zeros(X_train.shape[0])
+  
+  # 使用训练数据来训练/优化参数
+  parameters, costs = optimize(w, b, X_train, Y_train, num_iterations, learning_rate, print_cost)
+  
+  # 从字典里分别取出训练好的w和b
+  w = parameters["w"]
+  b = parameters["b"]
+  
+  # 使用训练好的w和b来分别对训练图片和测试图片进行预测
+  Y_prediction_train = predict(w, b, X_train)
+  Y_prediction_test = predict(w, b, X_test)
+  
+  # 打印出预测的准确率
+  print("对训练图片的预测准确率为：{}%".format(100 - np.mean(np.abs(Y_prediction_train - Y_train))*100)) # np.mean 求取矩阵平均值
+  print("对测试图片的预测准确率为：{}%".format(100 - np.mean(np.abs(Y_prediction_test - Y_test))*100)) # np.mean 求取矩阵平均值
+  
+  d = {
+    "costs": costs,
+    "Y_prediction_test":Y_prediction_test,
+    "Y_prediction_train": Y_prediction_train,
+    "w":w,
+    "b":b,
+    "learning_rate":learning_rate,
+    "num_iterations":num_iterations
+  }
+  
+  return d
+
+d = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations = 2000, learning_rate=0.005, print_cost = True)
+
+index = 8
+print(test_set_x[...,index]) # 选取第index列的数据，写法等价于 test_set_x[:,index]
+plt.imshow(test_set_x[:,index].reshape(num_px, num_px, 3))
+plt.show()
+print("这张图标签是：{}，预测结果是：{}".format(str(test_set_y[0,index]),str(int(d["Y_prediction_test"][0,index]))))
+
+# 显示成本随着训练次数增加时的变化情况，
+costs = np.squeeze(d["costs"])
+plt.plot(costs)
+plt.ylabel('cost')
+plt.xlabel('iterations(/100)')
+plt.title('Learning rate = ' + str(d["learning_rate"]))
+plt.show()
+
+# 显示不同的学习率情况下，损失函数的变化曲线
+learning_rates = [0.01, 0.001, 0.0001]
+models = {}
+for i in learning_rates:
+  print("\n学习率为：{}时".format(str(i)))
+  models[str(i)] = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations=3000,learning_rate=i, print_cost=False)
+  print("\n--------------------------------------------------------------\n")
+
+for i in learning_rates:
+  plt.plot(np.squeeze(models[str(i)]['costs']),label = str(models[str(i)]['learning_rate']))
+  plt.xlabel('iterations(/100)')
+  plt.ylabel('cost')
+  plt.title('cost---learning_rate')
+  
+  plt.legend(loc='upper center', shadow = True).get_frame().set_facecolor('0.9') # 显示图例,设置其透明度，默认透明度为1
+plt.show()
+
+my_image = 'niao.jpg'
+fname = file_path + '/images/' + my_image
+image = np.array(plt.imread(fname))
+plt.imshow(image)
+plt.show()
+
+# 最后对现实中的的随机图片进行检测
+my_image = tf.resize(image, (num_px, num_px), mode = 'reflect').reshape((1,num_px*num_px*3)).T
+my_predicted_image = predict(d["w"], d["b"], my_image)
+print("预测结果为：{}".format(str(int(np.squeeze(my_predicted_image)))))
 
 # print("test_set_y.shape : " + str(test_set_y.shape))
 # print("load_dataset():{}".format(load_dataset()))
