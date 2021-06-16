@@ -1,7 +1,7 @@
 '''
 Author       : Wang.HH
 Date         : 2021-06-02 08:19:30
-LastEditTime : 2021-06-06 11:07:35
+LastEditTime : 2021-06-07 09:14:38
 LastEditors  : Wang.HH
 Description  : your description
 FilePath     : /AI_Demo/my_first_demo/src/WebApiDemo.py
@@ -96,7 +96,7 @@ class my_app:
       request_body_size = 0
     print(request_body_size)
     request_body = self.environ['wsgi.input'].read(request_body_size).decode()
-    request_body = ast.literal_eval(request_body)
+    request_body = ast.literal_eval(request_body) # 将字符串转换为字典类型
     print(request_body)
     name = request_body['name']
     pwd = request_body['pwd']
