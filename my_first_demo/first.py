@@ -1,7 +1,7 @@
 '''
 Author       : Wang.HH
 Date         : 2021-04-28 10:39:59
-LastEditTime : 2021-06-02 08:21:48
+LastEditTime : 2021-06-18 10:37:45
 LastEditors  : Wang.HH
 Description  : your description
 FilePath     : /AI_Demo/my_first_demo/first.py
@@ -148,7 +148,7 @@ def propagate(w, b, X, Y):
   
   # 向后传播
   dZ = A - Y
-  dw = np.dot(X, dZ.T) / m
+  dw = np.dot(X, dZ.T) / m  
   db = np.sum(dZ) / m
   
   # 保存dw和db到字典里面
